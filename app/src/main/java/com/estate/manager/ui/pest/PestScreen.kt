@@ -1,4 +1,4 @@
-package com.estate.manager.ui.pest
+﻿package com.estate.manager.ui.pest
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,13 +46,13 @@ fun PestScreen(vm: PestViewModel = viewModel()) {
             modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
         )
 
-        // ── Map with red path polylines ───────────────────────────
+        // â”€â”€ Map with red path polylines â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         AndroidView(
             factory  = { ctx -> MapManager.init(ctx).also { mapRef = it } },
             modifier = Modifier.fillMaxWidth().weight(0.55f)
         )
 
-        // ── Chat with Pest Supervisor ─────────────────────────────
+        // â”€â”€ Chat with Pest Supervisor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Text(
             "Pest & Disease Supervisor Chat",
             style    = MaterialTheme.typography.titleMedium,
@@ -74,13 +74,13 @@ fun PestScreen(vm: PestViewModel = viewModel()) {
                 value         = chatInput,
                 onValueChange = { chatInput = it },
                 modifier      = Modifier.weight(1f),
-                placeholder   = { Text("Message supervisor…") },
+                placeholder   = { Text("Message supervisorâ€¦") },
                 singleLine    = true
             )
             Spacer(Modifier.width(8.dp))
             IconButton(onClick = {
                 if (chatInput.isNotBlank()) {
-                    vm.sendChat(chatInput.trim())
+                    vm.sendChat(text = chatInput.trim())
                     chatInput = ""
                 }
             }) {

@@ -1,4 +1,4 @@
-package com.estate.manager.ui.fertilize
+﻿package com.estate.manager.ui.fertilize
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -72,13 +72,13 @@ fun FertilizeScreen(vm: FertilizeViewModel = viewModel()) {
                 value         = chatInput,
                 onValueChange = { chatInput = it },
                 modifier      = Modifier.weight(1f),
-                placeholder   = { Text("Message supervisor…") },
+                placeholder   = { Text("Message supervisorâ€¦") },
                 singleLine    = true
             )
             Spacer(Modifier.width(8.dp))
             IconButton(onClick = {
                 if (chatInput.isNotBlank()) {
-                    vm.sendChat(chatInput.trim())
+                    vm.sendChat(text = chatInput.trim())
                     chatInput = ""
                 }
             }) {
