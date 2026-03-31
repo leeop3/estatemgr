@@ -35,14 +35,15 @@ jobs:
             -o /tmp/gradle-dist.zip
           unzip -q /tmp/gradle-dist.zip -d /tmp/gradle-dist
           WRAPPER_JAR=$(find /tmp/gradle-dist -name "gradle-wrapper*.jar" 2>/dev/null | head -1)
-          if [ -n "$WRAPPER_JAR" ]; then
-            cp "$WRAPPER_JAR" gradle/wrapper/gradle-wrapper.jar
-            echo "Wrapper JAR installed"
-          fi
-          ls -lh gradle/wrapper/
+          cp "$WRAPPER_JAR" gradle/wrapper/gradle-wrapper.jar
+          echo "Wrapper JAR: $(ls -lh gradle/wrapper/gradle-wrapper.jar)"
 
-      - name: Grant gradlew execute permission
-        run: chmod +x gradlew
+      - name: Fix gradlew
+        run: |
+          # Remove the broken DEFAULT_JVM_OPTS line and replace with correct format
+          sed -i 's/DEFAULT_JVM_OPTS=.*"-Xmx64m".*/DEFAULT_JVM_OPTS=""/' gradlew
+          chmod +x gradlew
+          echo "gradlew fixed"
 
       - name: Cache Gradle packages
         uses: actions/cache@v4
