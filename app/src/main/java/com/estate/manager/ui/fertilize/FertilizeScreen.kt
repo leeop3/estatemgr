@@ -23,7 +23,7 @@ fun FertilizeScreen(vm: FertilizeViewModel = viewModel()) {
 
     var mapRef    by remember { mutableStateOf<MapView?>(null) }
     var chatInput by remember { mutableStateOf("") }
-    val supervisorHash = remember { "" }
+    
 
     LaunchedEffect(tracks) {
         mapRef?.let { mv ->
@@ -78,7 +78,7 @@ fun FertilizeScreen(vm: FertilizeViewModel = viewModel()) {
             Spacer(Modifier.width(8.dp))
             IconButton(onClick = {
                 if (chatInput.isNotBlank()) {
-                    vm.sendChat(supervisorHash, chatInput.trim())
+                    vm.sendChat(chatInput.trim())
                     chatInput = ""
                 }
             }) {
