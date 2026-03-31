@@ -20,10 +20,8 @@ import org.osmdroid.views.MapView
 fun PestScreen(vm: PestViewModel = viewModel()) {
     val tracks   by vm.pestTracks.collectAsState()
     val messages by vm.chatMessages.collectAsState()
-
-    var mapRef     by remember { mutableStateOf<MapView?>(null) }
-    var chatInput  by remember { mutableStateOf("") }
-     // populated from Settings/Peers
+    var mapRef    by remember { mutableStateOf<MapView?>(null) }
+    var chatInput by remember { mutableStateOf("") }
 
     LaunchedEffect(tracks) {
         mapRef?.let { mv ->
@@ -33,59 +31,34 @@ fun PestScreen(vm: PestViewModel = viewModel()) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-
-        Text(
-            "Pest & Disease Coverage",
-            style    = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp)
-        )
-        Text(
-            "${tracks.size} path segment(s) recorded",
-            style    = MaterialTheme.typography.bodySmall,
-            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
-        )
-
-        // â”€â”€ Map with red path polylines â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        Text("Pest & Disease Coverage",
+             style    = MaterialTheme.typography.titleMedium,
+             modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp))
+        Text("${tracks.size} path segment(s) recorded",
+             style    = MaterialTheme.typography.bodySmall,
+             color    = MaterialTheme.colorScheme.onSurfaceVariant,
+             modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
         AndroidView(
             factory  = { ctx -> MapManager.init(ctx).also { mapRef = it } },
-            modifier = Modifier.fillMaxWidth().weight(0.55f)
-        )
-
-        // â”€â”€ Chat with Pest Supervisor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        Text(
-            "Pest & Disease Supervisor Chat",
-            style    = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
-        )
-        LazyColumn(
-            modifier      = Modifier.weight(0.30f),
-            reverseLayout = true
-        ) {
+            modifier = Modifier.fillMaxWidth().weight(0.55f))
+        Text("Pest & Disease Supervisor Chat",
+             style    = MaterialTheme.typography.titleMedium,
+             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp))
+        LazyColumn(modifier = Modifier.weight(0.30f), reverseLayout = true) {
             items(messages.reversed()) { ChatBubble(it) }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value         = chatInput,
                 onValueChange = { chatInput = it },
                 modifier      = Modifier.weight(1f),
-                placeholder   = { Text("Message supervisorâ€¦") },
-                singleLine    = true
-            )
+                placeholder   = { Text("Message supervisor...") },
+                singleLine    = true)
             Spacer(Modifier.width(8.dp))
             IconButton(onClick = {
-                if (chatInput.isNotBlank()) {
-                    vm.sendChat(text = chatInput.trim())
-                    chatInput = ""
-                }
-            }) {
-                Icon(Icons.Default.Send, contentDescription = "Send")
-            }
+                if (chatInput.isNotBlank()) { vm.sendChat(chatInput.trim()); chatInput = "" }
+            }) { Icon(Icons.Default.Send, contentDescription = "Send") }
         }
     }
 }

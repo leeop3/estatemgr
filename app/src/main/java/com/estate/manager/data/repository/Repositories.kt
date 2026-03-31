@@ -43,4 +43,5 @@ class PeerRepository(private val dao: PeerDao) {
     fun all(): Flow<List<Peer>> = dao.all()
     fun byRole(role: String) = dao.byRole(role)
     suspend fun findByHash(hash: String) = dao.findByHash(hash)
+    suspend fun delete(p: Peer) = dao.delete(p)
 }

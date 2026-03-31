@@ -1,4 +1,4 @@
-package com.estate.manager.ui.pest
+﻿package com.estate.manager.ui.pest
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class PestViewModel(app: Application) : AndroidViewModel(app) {
-
     private val db       = AppDatabase.get(app)
     private val gangRepo = GangRepository(db.gangDao())
     private val chatRepo = ChatRepository(db.chatDao())
@@ -32,7 +31,11 @@ class PestViewModel(app: Application) : AndroidViewModel(app) {
         chatRepo.messagesForChannel("PEST")
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun sendChat(supervisorDestHash: String, text: String) {
+    fun sendChat(text: String) {
+        val hash = getApplication<Application>()
+            .getSharedPreferences("estate_prefs", android.content.Context.MODE_PRIVATE)
+            .getString("supervisor_PEST", "") ?: ""
+        if (hash.isEmpty()) return
         viewModelScope.launch(Dispatchers.IO) {
             val msg = ChatMessage(
                 msgId      = UUID.randomUUID().toString(),
@@ -44,7 +47,7 @@ class PestViewModel(app: Application) : AndroidViewModel(app) {
                 isOutgoing = true
             )
             chatRepo.insert(msg)
-            rns.sendPacket(supervisorDestHash, PacketSerializer.encodeChatMessage(msg))
+            rns.sendPacket(hash, PacketSerializer.encodeChatMessage(msg))
         }
     }
 }
