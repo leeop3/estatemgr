@@ -28,22 +28,42 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Bootstrap Gradle Wrapper JAR
+      - name: Install Gradle 8.4 and set up wrapper
         run: |
-          mkdir -p gradle/wrapper
-          curl -fsSL "https://services.gradle.org/distributions/gradle-8.4-bin.zip" \
+          # Download and install Gradle directly
+          curl -fsSL https://services.gradle.org/distributions/gradle-8.4-bin.zip \
             -o /tmp/gradle-dist.zip
           unzip -q /tmp/gradle-dist.zip -d /tmp/gradle-dist
-          WRAPPER_JAR=$(find /tmp/gradle-dist -name "gradle-wrapper*.jar" 2>/dev/null | head -1)
-          cp "$WRAPPER_JAR" gradle/wrapper/gradle-wrapper.jar
-          echo "Wrapper JAR: $(ls -lh gradle/wrapper/gradle-wrapper.jar)"
+          export GRADLE_HOME=/tmp/gradle-dist/gradle-8.4
+          export PATH=$GRADLE_HOME/bin:$PATH
 
-      - name: Fix gradlew
-        run: |
-          # Remove the broken DEFAULT_JVM_OPTS line and replace with correct format
-          sed -i 's/DEFAULT_JVM_OPTS=.*"-Xmx64m".*/DEFAULT_JVM_OPTS=""/' gradlew
+          # Copy the real wrapper jar from the full distribution
+          cp $GRADLE_HOME/lib/plugins/gradle-wrapper-*.jar \
+            gradle/wrapper/gradle-wrapper.jar 2>/dev/null || \
+          cp $(find $GRADLE_HOME -name "gradle-wrapper*.jar" | head -1) \
+            gradle/wrapper/gradle-wrapper.jar
+          echo "Wrapper JAR size: $(wc -c < gradle/wrapper/gradle-wrapper.jar) bytes"
+
+          # Write a clean gradlew with no BOM
+          cat > gradlew << 'GRADLEW'
+          #!/bin/sh
+          APP_HOME=$(cd "$(dirname "$0")" && pwd -P)
+          CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+          if [ -n "$JAVA_HOME" ]; then
+            JAVACMD="$JAVA_HOME/bin/java"
+          else
+            JAVACMD="java"
+          fi
+          exec "$JAVACMD" -Xmx64m -Xms64m \
+            -Dorg.gradle.appname=gradlew \
+            -classpath "$CLASSPATH" \
+            org.gradle.wrapper.GradleWrapperMain "$@"
+          GRADLEW
+          # Strip any leading whitespace/BOM from gradlew
+          sed -i 's/^[[:space:]]*//' gradlew
           chmod +x gradlew
-          echo "gradlew fixed"
+          head -1 gradlew
+          echo "gradlew ready"
 
       - name: Cache Gradle packages
         uses: actions/cache@v4
@@ -55,7 +75,9 @@ jobs:
           restore-keys: gradle-${{ runner.os }}-
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        run: |
+          export PATH=/tmp/gradle-dist/gradle-8.4/bin:$PATH
+          ./gradlew assembleDebug --stacktrace --no-daemon
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
 
