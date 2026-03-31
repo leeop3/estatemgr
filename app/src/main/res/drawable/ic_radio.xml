@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ic_radio.xml - used by RnsService notification -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF4CAF50"
+        android:pathData="M1,9L1,11C6.03,11 10.1,15.07 10.1,20.1L12.1,20.1C12.1,13.96 7.14,9 1,9ZM1,13L1,15C3.94,15 6.35,17.41 6.35,20.35L8.35,20.35C8.35,16.3 5.05,13 1,13ZM1,5L1,7C8.24,7 14.1,12.86 14.1,20.1L16.1,20.1C16.1,11.76 9.34,5 1,5ZM3,17C1.9,17 1,17.9 1,19S1.9,21 3,21 5,20.1 5,19 4.1,17 3,17Z"/>
+</vector>

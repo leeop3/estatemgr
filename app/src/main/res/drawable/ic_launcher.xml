@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Green background circle -->
+    <path
+        android:fillColor="#FF1B5E20"
+        android:pathData="M0,0H108V108H0Z"/>
+    <!-- Palm tree silhouette -->
+    <path
+        android:fillColor="#FF4CAF50"
+        android:pathData="M54,20C54,20 40,35 38,45C36,55 42,58 42,58C42,58 38,62 38,72L46,72C46,72 46,65 48,62C50,59 54,60 54,60C54,60 58,59 60,62C62,65 62,72 62,72L70,72C70,72 70,62 66,58C66,58 72,55 70,45C68,35 54,20 54,20Z"/>
+    <!-- Radio waves -->
+    <path
+        android:fillColor="#FF81C784"
+        android:pathData="M74,30C78,34 80,40 80,46"
+        android:strokeColor="#FF81C784"
+        android:strokeWidth="3"/>
+    <path
+        android:fillColor="#FF81C784"
+        android:pathData="M78,26C84,32 87,39 87,46"
+        android:strokeColor="#FF81C784"
+        android:strokeWidth="3"/>
+</vector>
