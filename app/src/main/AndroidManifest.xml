@@ -1,48 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ── Bluetooth permissions ───────────────────────────────── -->
-    <!-- Android 12+ (API 31+) -->
+    <!-- Bluetooth permissions -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
         android:usesPermissionFlags="neverForLocation"
         tools:targetApi="s" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!-- Android 11 and below -->
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
 
-    <!-- BT hardware feature — not required, app works without BT on tablets -->
-    <uses-feature android:name="android.hardware.bluetooth"
-        android:required="false" />
-
-    <!-- ── Network / radio ─────────────────────────────────────── -->
+    <!-- Network -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- ── Location for GPS tagging ────────────────────────────── -->
+    <!-- Location -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- ── Camera for QR scanning ──────────────────────────────── -->
+    <!-- Camera for QR -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- ── Storage for map tiles and photos ────────────────────── -->
+    <!-- Storage -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
-    <!-- ── Wake lock for background RNS ────────────────────────── -->
+    <!-- Wake lock / foreground service -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
-        xmlns:tools="http://schemas.android.com/tools"
         android:name=".EstateApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -63,20 +58,17 @@
             </intent-filter>
         </activity>
 
-        <!-- RNS background service -->
         <service
             android:name=".rns.RnsService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
-        <!-- ZXing QR scanner activity -->
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
             tools:replace="screenOrientation" />
 
-        <!-- USB stub (kept for future USB-OTG fallback) -->
         <activity
             android:name=".ui.settings.UsbPermissionActivity"
             android:exported="false" />
