@@ -31,6 +31,7 @@ import com.estate.manager.ui.theme.EstateTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
@@ -61,23 +62,32 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startRns() {
-        lifecycleScope.launch(Dispatchers.IO) {
+        // RNS Reticulum must start on main thread due to signal handler requirements
+        lifecycleScope.launch(Dispatchers.Main) {
             try {
                 val prefs    = getSharedPreferences("estate_prefs", MODE_PRIVATE)
                 val nickname = prefs.getString("manager_nickname", "Manager:Unknown") ?: "Manager:Unknown"
-                val py       = com.chaquo.python.Python.getInstance()
-                val rns      = py.getModule("rns_backend")
-                val hash     = rns.callAttr("start_rns", filesDir.absolutePath, null, nickname).toString()
-                val freq     = prefs.getLong("rnode_freq", 865_000_000L)
-                val bw       = prefs.getInt("rnode_bw",   125_000)
-                val tx       = prefs.getInt("rnode_tx",   17)
-                val sf       = prefs.getInt("rnode_sf",   9)
-                val cr       = prefs.getInt("rnode_cr",   5)
-                rns.callAttr("inject_rnode", freq, bw, tx, sf, cr)
-                rns.callAttr("announce_now")
-                if (hash.isNotEmpty()) {
-                    launch(Dispatchers.Main) { settingsVm.onRnsStarted(hash) }
+                
+                // Call Python on main thread to avoid signal handler errors
+                val py  = com.chaquo.python.Python.getInstance()
+                val rns = py.getModule("rns_backend")
+                val hash = rns.callAttr("start_rns", filesDir.absolutePath, null, nickname).toString()
+                
+                // Radio config can be done in background after RNS init
+                withContext(Dispatchers.IO) {
+                    val freq = prefs.getLong("rnode_freq", 865_000_000L)
+                    val bw   = prefs.getInt("rnode_bw",   125_000)
+                    val tx   = prefs.getInt("rnode_tx",   17)
+                    val sf   = prefs.getInt("rnode_sf",   9)
+                    val cr   = prefs.getInt("rnode_cr",   5)
+                    rns.callAttr("inject_rnode", freq, bw, tx, sf, cr)
+                    rns.callAttr("announce_now")
                 }
+                
+                if (hash.isNotEmpty()) {
+                    settingsVm.onRnsStarted(hash)
+                }
+                android.util.Log.i("MainActivity", "RNS started hash=$hash")
             } catch (e: Exception) {
                 android.util.Log.e("MainActivity", "RNS start error: ${e.message}")
             }
