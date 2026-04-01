@@ -34,13 +34,12 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private val settingsVm:   SettingsViewModel   by viewModels()
-    private val bluetoothVm:  BluetoothViewModel  by viewModels()
+    private val settingsVm:  SettingsViewModel  by viewModels()
+    private val bluetoothVm: BluetoothViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Start RNS foreground service
         val svcIntent = Intent(this, RnsService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(svcIntent)
@@ -48,29 +47,22 @@ class MainActivity : ComponentActivity() {
             startService(svcIntent)
         }
 
-        // Watch BT bridge state â€” start RNS once bridge goes ACTIVE
+        // Start RNS once BT bridge becomes ACTIVE
         lifecycleScope.launch {
             bluetoothVm.bridgeState.collect { state ->
                 if (state == BridgeState.ACTIVE) {
-                    // Give the bridge 500ms to stabilise before Python connects
                     delay(500)
                     startRns()
                 }
             }
         }
 
-        // Also try RNS start immediately in case BT was already connected
-        // (e.g. app restart while T-Beam is still paired and bridge persists)
-        lifecycleScope.launch(Dispatchers.IO) {
-            delay(1000)
-            if (bluetoothVm.bridgeState.value == BridgeState.ACTIVE) {
-                startRns()
-            }
-        }
-
         setContent {
             EstateTheme {
-                MainScaffold(settingsVm, bluetoothVm)
+                MainScaffold(
+                    settingsVm  = settingsVm,
+                    bluetoothVm = bluetoothVm
+                )
             }
         }
     }
@@ -82,19 +74,17 @@ class MainActivity : ComponentActivity() {
                 val nickname = prefs.getString("manager_nickname", "Manager:Unknown") ?: "Manager:Unknown"
                 val py       = com.chaquo.python.Python.getInstance()
                 val rns      = py.getModule("rns_backend")
-                // inject_rnode will connect to 127.0.0.1:7633 â€” the BT bridge TCP server
-                val hash = rns.callAttr("start_rns", filesDir.absolutePath, null, nickname).toString()
-                val freq = prefs.getLong("rnode_freq", 865_000_000L)
-                val bw   = prefs.getInt("rnode_bw",   125_000)
-                val tx   = prefs.getInt("rnode_tx",   17)
-                val sf   = prefs.getInt("rnode_sf",   9)
-                val cr   = prefs.getInt("rnode_cr",   5)
+                val hash     = rns.callAttr("start_rns", filesDir.absolutePath, null, nickname).toString()
+                val freq     = prefs.getLong("rnode_freq", 865_000_000L)
+                val bw       = prefs.getInt ("rnode_bw",  125_000)
+                val tx       = prefs.getInt ("rnode_tx",  17)
+                val sf       = prefs.getInt ("rnode_sf",  9)
+                val cr       = prefs.getInt ("rnode_cr",  5)
                 rns.callAttr("inject_rnode", freq, bw, tx, sf, cr)
                 rns.callAttr("announce_now")
                 if (hash.isNotEmpty()) {
                     launch(Dispatchers.Main) { settingsVm.onRnsStarted(hash) }
                 }
-                android.util.Log.i("MainActivity", "RNS started hash=$hash")
             } catch (e: Exception) {
                 android.util.Log.e("MainActivity", "RNS start error: ${e.message}")
             }
@@ -108,38 +98,31 @@ fun MainScaffold(
     bluetoothVm: BluetoothViewModel
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-
-    // Show BT tab badge when not connected
     val bridgeState by bluetoothVm.bridgeState.collectAsState()
-
-    val tabs = listOf(
-        Triple("Harvest",   Icons.Default.Agriculture, 0),
-        Triple("Pest",      Icons.Default.BugReport,   1),
-        Triple("Fert",      Icons.Default.Grass,       2),
-        Triple("BT/RNode",  Icons.Default.Bluetooth,   3),
-        Triple("Settings",  Icons.Default.Settings,    4)
-    )
 
     Scaffold(
         bottomBar = {
             NavigationBar {
-                tabs.forEach { (label, icon, idx) ->
+                listOf(
+                    Triple("Harvest",  Icons.Default.Agriculture, 0),
+                    Triple("Pest",     Icons.Default.BugReport,   1),
+                    Triple("Fert",     Icons.Default.Grass,       2),
+                    Triple("RNode",    Icons.Default.Bluetooth,   3),
+                    Triple("Settings", Icons.Default.Settings,    4)
+                ).forEach { (label, icon, idx) ->
                     NavigationBarItem(
-                        selected  = selectedTab == idx,
-                        onClick   = { selectedTab = idx },
-                        icon      = {
-                            // Show badge on BT tab when disconnected
+                        selected = selectedTab == idx,
+                        onClick  = { selectedTab = idx },
+                        icon     = {
                             if (idx == 3 && bridgeState != BridgeState.ACTIVE) {
-                                BadgedBox(badge = {
-                                    Badge { Text("!") }
-                                }) {
+                                BadgedBox(badge = { Badge { Text("!") } }) {
                                     Icon(icon, contentDescription = label)
                                 }
                             } else {
                                 Icon(icon, contentDescription = label)
                             }
                         },
-                        label     = { Text(label) }
+                        label = { Text(label) }
                     )
                 }
             }
@@ -150,8 +133,8 @@ fun MainScaffold(
                 0 -> HarvestScreen()
                 1 -> PestScreen()
                 2 -> FertilizeScreen()
-                3 -> BluetoothScreen(bluetoothVm)
-                4 -> SettingsScreen(settingsVm)
+                3 -> BluetoothScreen()
+                4 -> SettingsScreen(vm = settingsVm)
             }
         }
     }
