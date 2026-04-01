@@ -1,4 +1,4 @@
-﻿package com.estate.manager
+package com.estate.manager
 
 import android.content.Intent
 import android.os.Build
@@ -39,15 +39,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val svcIntent = Intent(this, RnsService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(svcIntent)
         } else {
             startService(svcIntent)
         }
-
-        // Start RNS once BT bridge becomes ACTIVE
         lifecycleScope.launch {
             bluetoothVm.bridgeState.collect { state ->
                 if (state == BridgeState.ACTIVE) {
@@ -56,13 +53,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
         setContent {
             EstateTheme {
-                MainScaffold(
-                    settingsVm  = settingsVm,
-                    bluetoothVm = bluetoothVm
-                )
+                MainScaffold(settingsVm, bluetoothVm)
             }
         }
     }
@@ -76,10 +69,10 @@ class MainActivity : ComponentActivity() {
                 val rns      = py.getModule("rns_backend")
                 val hash     = rns.callAttr("start_rns", filesDir.absolutePath, null, nickname).toString()
                 val freq     = prefs.getLong("rnode_freq", 865_000_000L)
-                val bw       = prefs.getInt ("rnode_bw",  125_000)
-                val tx       = prefs.getInt ("rnode_tx",  17)
-                val sf       = prefs.getInt ("rnode_sf",  9)
-                val cr       = prefs.getInt ("rnode_cr",  5)
+                val bw       = prefs.getInt("rnode_bw",   125_000)
+                val tx       = prefs.getInt("rnode_tx",   17)
+                val sf       = prefs.getInt("rnode_sf",   9)
+                val cr       = prefs.getInt("rnode_cr",   5)
                 rns.callAttr("inject_rnode", freq, bw, tx, sf, cr)
                 rns.callAttr("announce_now")
                 if (hash.isNotEmpty()) {
@@ -93,13 +86,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScaffold(
-    settingsVm:  SettingsViewModel,
-    bluetoothVm: BluetoothViewModel
-) {
+fun MainScaffold(settingsVm: SettingsViewModel, bluetoothVm: BluetoothViewModel) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val bridgeState by bluetoothVm.bridgeState.collectAsState()
-
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -134,7 +123,7 @@ fun MainScaffold(
                 1 -> PestScreen()
                 2 -> FertilizeScreen()
                 3 -> BluetoothScreen()
-                4 -> SettingsScreen(vm = settingsVm)
+                4 -> SettingsScreen(settingsVm)
             }
         }
     }
