@@ -1,4 +1,4 @@
-package com.estate.manager
+﻿package com.estate.manager
 
 import android.content.Intent
 import android.os.Build
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
             startService(svcIntent)
         }
 
-        // Watch BT bridge state — start RNS once bridge goes ACTIVE
+        // Watch BT bridge state â€” start RNS once bridge goes ACTIVE
         lifecycleScope.launch {
             bluetoothVm.bridgeState.collect { state ->
                 if (state == BridgeState.ACTIVE) {
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                 val nickname = prefs.getString("manager_nickname", "Manager:Unknown") ?: "Manager:Unknown"
                 val py       = com.chaquo.python.Python.getInstance()
                 val rns      = py.getModule("rns_backend")
-                // inject_rnode will connect to 127.0.0.1:7633 — the BT bridge TCP server
+                // inject_rnode will connect to 127.0.0.1:7633 â€” the BT bridge TCP server
                 val hash = rns.callAttr("start_rns", filesDir.absolutePath, null, nickname).toString()
                 val freq = prefs.getLong("rnode_freq", 865_000_000L)
                 val bw   = prefs.getInt("rnode_bw",   125_000)
@@ -150,8 +150,8 @@ fun MainScaffold(
                 0 -> HarvestScreen()
                 1 -> PestScreen()
                 2 -> FertilizeScreen()
-                3 -> BluetoothScreen(vm = bluetoothVm)
-                4 -> SettingsScreen(vm = settingsVm)
+                3 -> BluetoothScreen(bluetoothVm)
+                4 -> SettingsScreen(settingsVm)
             }
         }
     }
